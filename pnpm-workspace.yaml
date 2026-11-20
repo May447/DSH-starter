@@ -1,0 +1,11 @@
+allowBuilds:
+  electron-winstaller: set this to true or false
+# pnpm 11 reads these knobs here, not from package.json.
+# - hoisted linking keeps a flat node_modules: Electron's install script needs
+#   its own dependencies resolvable from node_modules/electron.
+# - Electron's postinstall downloads the platform binary; allow it.
+minimumReleaseAgeExclude:
+  - electron@45.3.2
+nodeLinker: hoisted
+onlyBuiltDependencies:
+  - electron

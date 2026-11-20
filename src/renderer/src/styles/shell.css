@@ -1,0 +1,651 @@
+/* ---------------------------------------------------------------------------
+ * HoYoPlay-style shell.
+ *
+ * The wallpaper owns the screen; everything else is a floating glass layer with
+ * white type. The four-slot theme is confined to the launch button and the
+ * settings panel, so the main screen is neutral no matter which palette is set.
+ * ------------------------------------------------------------------------- */
+
+/* ── Backdrop ─────────────────────────────────────────────────────────────── */
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.backdrop__art {
+  position: absolute;
+  inset: -3%;
+  background-position: center;
+  background-size: cover;
+  transition: filter 0.25s var(--ease);
+}
+
+/* The user's own picture, painted over the built-in gradient. */
+.backdrop__photo {
+  position: absolute;
+  inset: -3%;
+  background-position: center;
+  background-size: cover;
+  transition: filter 0.25s var(--ease);
+}
+
+.backdrop__scrim {  position: absolute;
+  inset: 0;
+  transition: background-color 0.25s var(--ease);
+}
+
+/* Dark vignette top and bottom so the bars read on any picture. */
+.backdrop__vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.46) 0%, transparent 22%, transparent 58%, rgba(0, 0, 0, 0.62) 100%);
+}
+
+/* ── Shell grid + neutral tokens ──────────────────────────────────────────── */
+
+.app {
+  position: relative;
+  grid-template-rows: 44px minmax(0, 1fr);
+  background: transparent;
+
+  --text: rgba(255, 255, 255, 0.97);
+  --text-2: rgba(255, 255, 255, 0.82);
+  --muted: rgba(255, 255, 255, 0.6);
+  --muted-2: rgba(255, 255, 255, 0.42);
+  --border: rgba(255, 255, 255, 0.16);
+  --border-strong: rgba(255, 255, 255, 0.28);
+  --surface-1: rgba(255, 255, 255, 0.07);
+  --surface-2: rgba(255, 255, 255, 0.11);
+  --surface-3: rgba(255, 255, 255, 0.16);
+  --bg-0: transparent;
+  --bg-1: transparent;
+  --bg-2: transparent;
+
+  /*
+   * The shell always sits on a photo, so its semantic colours are the "on dark
+   * glass" set regardless of palette — otherwise a light palette would put its
+   * dark success green on a translucent-black pill. The settings drawer re-scopes
+   * these back to palette values below.
+   */
+  --ok: #5fe0a8;
+  --warn: #ffc861;
+  --bad: #ff7e96;
+  --cool: #9aa7c9;
+}
+
+/*
+ * The title bar hosts the "more" popover, which hangs *below* the strip and over
+ * the stage. Both were z-index 1, so the transparent stage painted (and hit-
+ * tested) above the popover: the menu was visible but every click landed on the
+ * stage. The bar therefore sits above the stage, the dock, the log sheet and the
+ * settings layer — nothing of those overlaps the 44px strip anyway.
+ */
+.app > .titlebar {
+  position: relative;
+  z-index: 60;
+}
+
+.app > .stage {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Top bar ──────────────────────────────────────────────────────────────── */
+
+.titlebar {
+  grid-row: 1;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent);
+  border-bottom: 0;
+  /* Right padding keeps the tagline clear of the OS window controls that
+     `titleBarOverlay` draws on top of the custom title bar. */
+  padding: 0 150px 0 20px;
+  gap: 12px;
+}
+
+.titlebar__name {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.titlebar__mark {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Utility controls sit right after the brand, still inside the drag strip. */
+.titlebar__tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar__tools .btn--quiet {
+  border-color: transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.titlebar__tools .btn--quiet:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* ── Main row: the visual stage owns the screen ──────────────────────────── */
+
+.stage {
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  padding: 0 clamp(28px, 5vw, 72px) clamp(84px, 12vh, 132px);
+  background: transparent;
+  min-height: 0;
+  /* One implicit row; centring it keeps the stage block optically mid-screen
+     instead of hugging the title bar. */
+  align-content: center;
+}
+
+.visual__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11px;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+}
+
+.visual__eyebrow::before {
+  content: '';
+  display: block;
+  width: 26px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.visual__title {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(30px, 5vw, 54px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.05;
+  text-shadow: 0 6px 32px rgba(0, 0, 0, 0.55);
+}
+
+.visual__path {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.visual__desc {
+  margin: 0;
+  max-width: 620px;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+
+.visual__progress {
+  position: relative;
+  overflow: hidden;
+  width: min(360px, 100%);
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.visual__progress::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: progress-slide 1.4s var(--ease) infinite;
+}
+
+/* ── Empty state: teach the three-step flow instead of one grey line ─────── */
+
+.empty-start {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 620px;
+  margin-top: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-lg);
+  background: var(--glass-sheen), rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(var(--glass-blur-soft));
+  animation: rise-in 0.3s var(--ease) both;
+}
+
+.empty-start__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.empty-start__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-edge);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.empty-start__copy {
+  min-width: 0;
+  align-self: center;
+}
+
+.empty-start__title {
+  margin: 0;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+
+/* Three short steps on one line: the flow is the message, not the prose. */
+.empty-start__steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.empty-start__steps li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  line-height: 1.4;
+  counter-increment: step;
+}
+
+.empty-start__steps li::before {
+  content: counter(step);
+  display: grid;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.62);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.empty-start__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+/*
+ * Stage cards: `layout.css` owns geometry and type, this owns the surface —
+ * everything here floats over a photo, so the fill has to guarantee contrast
+ * on its own. One recipe, two tints (ready = accent-green, failure = warm).
+ */
+
+
+/* Failure panel, same glass language with a warm edge. */
+.error-notice {
+  max-width: 680px;
+  border: 1px solid color-mix(in srgb, var(--bad) 42%, transparent);
+  border-radius: var(--radius-lg);
+  background: var(--glass-sheen), rgba(28, 8, 14, 0.55);
+  backdrop-filter: blur(var(--glass-blur-soft));
+}
+
+/* Transient notice: warm glass, same family. */
+.notice {
+  border: 1px solid color-mix(in srgb, var(--warn) 32%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--glass-sheen), color-mix(in srgb, var(--warn) 14%, rgba(0, 0, 0, 0.42));
+  color: color-mix(in srgb, var(--warn) 78%, #ffffff);
+  backdrop-filter: blur(var(--glass-blur-soft));
+}
+
+/* ── Launch dock: the one big action, bottom-right ───────────────────────── */
+
+.dock {
+  position: absolute;
+  right: clamp(24px, 3vw, 44px);
+  bottom: clamp(24px, 3vw, 40px);
+  z-index: 2;
+}
+
+.dock .btn--lg {
+  min-width: 208px;
+  padding: 0 34px;
+  border-radius: 26px;
+  font-size: 16px;
+}
+
+/* The corner button is the only place the four-slot theme shows. */
+.dock .btn--primary {
+  background: linear-gradient(115deg, var(--accent), var(--accent-2));
+  color: var(--accent-ink);
+  box-shadow: 0 18px 44px -18px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.dock .btn--ghost {
+  border-radius: 26px;
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.dock .btn--ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ── Secondary actions: one trigger, one glass popover ───────────────────── */
+
+.moremenu {
+  position: relative;
+  display: flex;
+}
+
+/* Expanded trigger stays visibly "latched" so the popover has an anchor. */
+.moremenu .btn[aria-expanded='true'] {
+  border-color: var(--glass-edge);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.moremenu__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 236px;
+  padding: 6px;
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-lg);
+  background: var(--glass-sheen), rgba(10, 12, 18, 0.84);
+  box-shadow: var(--shadow-float);
+  backdrop-filter: blur(var(--glass-blur));
+  animation: rise-in 0.16s var(--ease) both;
+}
+
+/* Header block: Web GUI state + address, the only place that speaks about it. */
+.moremenu__head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px 2px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 11px;
+  letter-spacing: 0.3px;
+}
+
+.moremenu__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.moremenu__dot[data-ready='true'] {
+  background: var(--ok);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ok) 22%, transparent);
+}
+
+.moremenu__head-label {
+  color: rgba(255, 255, 255, 0.86);
+  font-weight: 600;
+}
+
+.moremenu__head-state {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.moremenu__url {
+  overflow: hidden;
+  margin: 0 10px 6px;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.moremenu__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  transition:
+    background-color 0.14s var(--ease),
+    color 0.14s var(--ease);
+}
+
+.moremenu__item svg {
+  flex: none;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.14s var(--ease);
+}
+
+.moremenu__item:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.moremenu__item:hover:not(:disabled) svg {
+  color: #ffffff;
+}
+
+.moremenu__item:disabled {
+  opacity: 0.38;
+}
+
+/* Log drawer already open: mark the item as an active toggle, not an action. */
+.moremenu__item[data-active='true'] {
+  color: color-mix(in srgb, var(--accent) 62%, #ffffff);
+}
+
+.moremenu__item[data-active='true'] svg {
+  color: color-mix(in srgb, var(--accent) 62%, #ffffff);
+}
+
+.moremenu__sep {
+  height: 1px;
+  margin: 4px 6px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Log sheet (bottom drawer, only when opened) ─────────────────────────── */
+
+.logsheet {
+  position: absolute;
+  right: 16px;
+  /* Clear of the launch dock, so the corner button stays reachable. */
+  bottom: 100px;
+  left: 16px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  max-height: 46vh;
+  overflow: hidden;
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-xl);
+  background: var(--glass-sheen), rgba(6, 8, 12, 0.86);
+  box-shadow: var(--shadow-float);
+  backdrop-filter: blur(var(--glass-blur));
+  animation: rise-in 0.24s var(--ease) both;
+}
+
+.logsheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+}
+
+.logsheet__body {
+  min-height: 180px;
+  flex: 1;
+}
+
+.logsheet__body .terminal__host,
+.logsheet__body .terminal {
+  height: 100%;
+}
+
+.logsheet__tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.logsheet__tools .terminal__tool {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ── Settings panel: the theme lives here ────────────────────────────────── */
+
+.bg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.bg-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 0.16s var(--ease), transform 0.16s var(--ease);
+}
+
+.bg-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+}
+
+.bg-card[data-active='true'] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-soft) inset;
+}
+
+.bg-card:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+
+.bg-card__art {
+  height: 42px;
+  background-position: center;
+  background-size: cover;
+}
+
+.bg-card__name {
+  padding: 2px 0 5px;
+  font-size: 10.5px;
+  text-align: center;
+}
+
+/* The settings panel keeps the palette (it is the one place the theme lives) but
+   wears the same glass recipe as every other floating surface. The fill stays
+   dense — a paper palette must still read as paper, and muted text over a
+   photo's tint drops below contrast. */
+.app .drawer {
+  border-color: color-mix(in srgb, var(--slot-surface) 55%, transparent);
+  background:
+    var(--glass-sheen),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--slot-surface) 96%, transparent),
+      color-mix(in srgb, var(--slot-bg) 98%, transparent)
+    );
+  backdrop-filter: blur(var(--glass-blur)) saturate(115%);
+}
+
+[data-theme-light='true'] .app .drawer {
+  --text: #141821;
+  --text-2: #394153;
+  --muted: #5c6478;
+  --muted-2: #818aa0;
+  --border: color-mix(in srgb, var(--slot-surface) 70%, transparent);
+  --border-strong: color-mix(in srgb, var(--slot-surface) 90%, transparent);
+  --surface-1: color-mix(in srgb, var(--slot-surface) 40%, transparent);
+  --surface-2: color-mix(in srgb, var(--slot-surface) 65%, transparent);
+  --surface-3: color-mix(in srgb, var(--slot-surface) 80%, transparent);
+  /* Palette-light semantics for text on a paper panel. */
+  --ok: #1f8f5f;
+  --warn: #b06d00;
+  --bad: #b42318;
+  --cool: #4a5568;
+}
+
+[data-theme-light='false'] .app .drawer {
+  --text: #eef1f8;
+  --text-2: #c8cfdd;
+  --muted: #8e97ab;
+  --muted-2: #626b7e;
+  --border: rgba(255, 255, 255, 0.16);
+  --border-strong: rgba(255, 255, 255, 0.3);
+  --surface-1: rgba(255, 255, 255, 0.06);
+  --surface-2: rgba(255, 255, 255, 0.1);
+  --surface-3: rgba(255, 255, 255, 0.16);
+}

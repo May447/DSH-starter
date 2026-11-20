@@ -1,0 +1,384 @@
+/* Settings panel: an inline floating surface, not a modal dialog. */
+
+.drawer-layer {
+  position: fixed;
+  /* Starts below the title bar: the OS window controls are drawn on top of the
+     page, so a panel reaching into that strip would have its own close button
+     sat next to (and under) min/max/close. */
+  inset: 44px 0 0;
+  z-index: 50;
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px;
+  background: transparent;
+  animation: fade-in 0.18s var(--ease) both;
+}
+
+.drawer {
+  display: flex;
+  flex-direction: column;
+  width: min(408px, 100vw - 24px);
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  /* Same glass family as the log sheet and the ready card: one blur, one edge,
+     one sheen. The fill stays dense enough to keep text readable on a photo. */
+  background:
+    var(--glass-sheen),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg-2) 96%, transparent),
+      color-mix(in srgb, var(--bg-1) 98%, transparent)
+    );
+  backdrop-filter: blur(var(--glass-blur)) saturate(115%);
+  box-shadow: var(--shadow-float);
+  animation: slide-in 0.26s var(--ease) both;
+}
+
+.drawer__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.drawer__title {
+  margin: 0;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+
+.drawer__subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.drawer__close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-1);
+  color: var(--muted);
+}
+
+.drawer__close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.drawer__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 22px;
+  min-height: 0;
+  padding: 16px 18px 22px;
+  overflow-y: auto;
+}
+
+.drawer__foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-1) 55%, transparent);
+}
+
+.drawer__status {
+  flex: 1;
+  min-width: 0;
+}
+
+.drawer__save-error {
+  margin: 0;
+  color: var(--bad);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.drawer__problem {
+  margin: 0;
+  color: var(--warn);
+  font-size: 11px;
+}
+
+.drawer__clean {
+  margin: 0;
+  color: var(--muted-2);
+  font-size: 11px;
+}
+
+.drawer__actions {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.group__title {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+}
+
+.group__note {
+  margin: -4px 0 0;
+  color: var(--muted-2);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+/* Field wrapper */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.field__label {
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.field__aside {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.field__hint {
+  margin: 0;
+  color: var(--muted-2);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.field__error {
+  margin: 0;
+  color: var(--bad);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.field[data-invalid='true'] .input {
+  border-color: color-mix(in srgb, var(--bad) 50%, transparent);
+  background: color-mix(in srgb, var(--bad) 5%, var(--field-bg));
+}
+
+/* Row editors (extra args, env) */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rows__empty {
+  margin: 0;
+  color: var(--muted-2);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.row--env {
+  flex-wrap: wrap;
+}
+
+.row__index {
+  flex: none;
+  width: 16px;
+  color: var(--muted-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-align: right;
+}
+
+.row__key {
+  flex: 0 1 40%;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.row__eq {
+  color: var(--muted-2);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+/* Icon-only row button (rename): same hit area as remove, neutral by default. */
+.row__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 28px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted-2);
+  transition:
+    color 0.15s var(--ease),
+    background-color 0.15s var(--ease),
+    border-color 0.15s var(--ease);
+}
+
+.row__icon:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+
+.row__icon:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Inline rename field: keeps the row height so the list does not jump. */
+.ws-list__rename {
+  flex: 1;
+  height: 28px;
+  font-size: 12px;
+}
+
+.row__remove {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 28px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted-2);
+  transition:
+    color 0.15s var(--ease),
+    background-color 0.15s var(--ease),
+    border-color 0.15s var(--ease);
+}
+
+.row__remove:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--bad) 26%, transparent);
+  background: color-mix(in srgb, var(--bad) 10%, transparent);
+  color: var(--bad);
+}
+
+.row__remove:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.row__error {
+  flex-basis: 100%;
+  margin: 0;
+  padding-left: 22px;
+  color: var(--bad);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.row[data-invalid='true'] .input {
+  border-color: color-mix(in srgb, var(--bad) 50%, transparent);
+  background: color-mix(in srgb, var(--bad) 5%, var(--field-bg));
+}
+
+.rows__add {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11.5px;
+  transition:
+    color 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    background-color 0.15s var(--ease);
+}
+
+.rows__add:hover {
+  border-color: var(--accent-ring);
+  background: var(--accent-soft);
+  color: var(--text-2);
+}
+
+/* Workspace list inside the drawer */
+.ws-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ws-list__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-1);
+}
+
+.ws-list__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ws-list__text strong {
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-list__text span {
+  overflow: hidden;
+  color: var(--muted-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

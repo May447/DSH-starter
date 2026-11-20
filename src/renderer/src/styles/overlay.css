@@ -1,0 +1,70 @@
+/* Transient overlays that sit above the shell: drag-and-drop hint. */
+
+.drop-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.32);
+  pointer-events: none;
+}
+
+.drop-hint__inner {
+  padding: 16px 30px;
+  border: 1px dashed rgba(255, 255, 255, 0.62);
+  border-radius: 16px;
+  color: #ffffff;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.bg-image-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Workspace picker rows inside settings: one click arms a workspace. */
+.ws-list__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ws-list__pick {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.ws-list__pick:hover {
+  background: var(--surface-2);
+}
+
+.ws-list__item[data-active='true'] .ws-list__pick {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.ws-list__badge {
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.ws-add {
+  margin-top: 8px;
+}

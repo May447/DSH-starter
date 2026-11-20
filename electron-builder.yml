@@ -1,0 +1,54 @@
+# electron-builder configuration
+# Docs: https://www.electron.build/configuration/configuration
+appId: app.dshstarter
+productName: DSH-starter
+copyright: Copyright © 2026 DSH-starter contributors
+
+directories:
+  buildResources: build
+  output: release
+
+# The renderer bundles React and xterm with Vite, and the main bundle only
+# needs Electron + Node built-ins, so no runtime node_modules have to ship.
+files:
+  - out/**
+  - package.json
+  - '!**/*.map'
+asar: true
+
+# Keep the shipped Chromium small: only the two locales the launcher speaks.
+electronLanguages:
+  - en-US
+  - zh-CN
+
+# No native modules, so no rebuild step is needed.
+npmRebuild: false
+buildDependenciesFromSource: false
+
+win:
+  icon: build/icon.png
+  target:
+    - target: nsis
+      arch:
+        - x64
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  shortcutName: DSH-starter
+  deleteAppDataOnUninstall: false
+
+mac:
+  icon: build/icon.png
+  category: public.app-category.developer-tools
+  target:
+    - dmg
+  hardenedRuntime: false
+
+linux:
+  icon: build/icon.png
+  category: Development
+  target:
+    - AppImage

@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+out/
+dist/
+release/
+*.tsbuildinfo
+
+# local dev runtime data (Electron userData, caches, screenshots, fake homes)
+# these contain machine-local state and absolute paths — never commit them
+.dev/
+.dev-*/
+.dev-shots/
+
+# misc caches
+.cache/
+
+# tooling / agent workspaces
+.workbuddy/
+
+# logs & OS junk
+*.log
+.DS_Store
+Thumbs.db
+
+# secrets
+.env
+.env.*
+!.env.example

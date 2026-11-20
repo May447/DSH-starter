@@ -1,0 +1,86 @@
+/* Design tokens: one palette, one radius scale, one motion curve. */
+
+:root {
+  color-scheme: dark;
+
+  /* Background stack */
+  --bg-0: #06070b;
+  --bg-1: #0a0b11;
+  --bg-2: #0e1017;
+
+  /* Surfaces (translucent, layered over the gradient backdrop) */
+  --surface-1: rgba(255, 255, 255, 0.032);
+  --surface-2: rgba(255, 255, 255, 0.055);
+  --surface-3: rgba(255, 255, 255, 0.085);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Type */
+  --text: #e9ecf6;
+  --text-2: #c3c9db;
+  --muted: #8a91a7;
+  --muted-2: #666d82;
+
+  /*
+   * Inset fields (inputs, segmented wells, row editors).
+   *
+   * These are *not* plain `rgba(0,0,0,…)` overlays: a fixed black wash turns a
+   * light palette into grey blocks. `theme.ts` re-derives them per palette, so
+   * the values here are only the dark-theme fallback for the first paint.
+   */
+  --field-bg: rgba(0, 0, 0, 0.3);
+  --field-bg-focus: rgba(0, 0, 0, 0.42);
+  --field-well: rgba(0, 0, 0, 0.26);
+  --field-placeholder: #565c6d;
+  --hover-wash: rgba(255, 255, 255, 0.05);
+
+  /* Hairlines: the 1px light line that makes a solid fill read as a surface. */
+  --hairline: rgba(255, 255, 255, 0.08);
+
+  /* Glass recipe: one set of numbers for every floating surface. */
+  --glass-blur: 18px;
+  --glass-blur-soft: 10px;
+  --glass-edge: rgba(255, 255, 255, 0.18);
+  --glass-edge-strong: rgba(255, 255, 255, 0.26);
+  --glass-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.015));
+
+  /* Accent + semantic state colours */
+  --accent: #7b86ff;
+  --accent-2: #a474ff;
+  --accent-ink: #0a0b12;
+  --accent-soft: rgba(123, 134, 255, 0.16);
+  --accent-ring: rgba(123, 134, 255, 0.45);
+  --ok-soft: rgba(95, 224, 168, 0.14);
+  --ok: #5fe0a8;
+  --warn: #ffc861;
+  --bad: #ff7e96;
+  --cool: #9aa7c9;
+
+  /*
+   * The four user-chosen slots. `applyTheme` overwrites them on <html>, but the
+   * first frame renders before that effect runs, so they need a fallback here —
+   * otherwise `color-mix()` against an undefined slot paints nothing.
+   */
+  --slot-bg: #0b0f1a;
+  --slot-surface: #151c2c;
+  --slot-primary: #5b8cff;
+  --slot-accent: #8f6bff;
+
+  /* Geometry */
+  --radius-xl: 18px;
+  --radius-lg: 14px;
+  --radius-md: 11px;
+  --radius-sm: 8px;
+
+  /* Elevation */
+  --shadow-panel: 0 18px 44px -26px rgba(0, 0, 0, 0.85);
+  --shadow-float: 0 26px 64px -24px rgba(0, 0, 0, 0.85);
+
+  /* Type stacks */
+  --font-ui: 'Segoe UI Variable Display', 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei UI',
+    'Microsoft YaHei', system-ui, -apple-system, 'Noto Sans SC', sans-serif;
+  --font-mono: 'Cascadia Mono', 'JetBrains Mono', 'Consolas', 'Courier New', ui-monospace, monospace;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
