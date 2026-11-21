@@ -8,7 +8,7 @@ DSH-starter 是一层**前端门面 + 进程管理**，不是另一个 agent 运
 
 - **工作区卡片**：把常用目录做成启动器里的"游戏库"，点谁就用谁当 `cwd`
 - **一键启动**：`spawn` 一个 `dsh <profile>` 子进程，实时把 stdout/stderr 喂进终端面板
-- **就绪识别**：解析 `dsh web: http://…` 就绪行，自动把 DSH Web GUI 接过来（内嵌窗口或丢给浏览器）
+- **就绪识别**：解析 `dsh web: http://…` 就绪行，把 Web GUI 交给你自己的浏览器（不做内嵌窗口、不自建 pty）
 - **通用配置**：命令、profile、参数、环境变量、`DSH_HOME`、端口全部可配，**不写死任何本机路径**
 
 聊天、会话、审批、插件这些能力**全部复用 DSH 自己**——本项目不重造这些轮子。
@@ -18,6 +18,18 @@ DSH-starter 是一层**前端门面 + 进程管理**，不是另一个 agent 运
 ## 状态
 
 v0.1 可用。已落地：Electron + React + electron-vite 工程、IPC 契约、设置持久化、`dsh` 子进程管理（含就绪行解析）、HoYoPlay 式外壳、xterm 启动日志、三平台打包。剩余：界面 i18n、首启引导、签名。
+
+## 安装（不想编译）
+
+去 [Releases](../../releases) 下载对应产物：
+
+| 产物 | 适合 |
+| --- | --- |
+| `DSH-starter-Setup-x.y.z.exe` | 常规安装：可选安装路径，建桌面 / 开始菜单快捷方式 |
+| `DSH-starter-x.y.z-portable.exe` | 单文件便携版，免安装，放 U 盘也能跑 |
+| `.dmg` / `.AppImage` | macOS / Linux |
+
+前提：本机有可用的 `dsh`（PATH 上，或在设置里填绝对路径）。**启动器自己不带 dsh。**
 
 ## 环境要求
 
@@ -32,7 +44,7 @@ pnpm install
 pnpm dev
 ```
 
-默认配置：`dshCommand=dsh`、`profile=web`、`port=0`（让系统挑空闲端口）、`openOnReady=window`。
+默认配置：`dshCommand=dsh`、`profile=web`、`port=0`（让系统挑空闲端口）、`openOnReady=external`。
 第一次启动如果找不到 `dsh`，在设置里填绝对路径（Windows 上可以是 `dsh.cmd`）。
 
 ## 配置
@@ -123,12 +135,13 @@ src/
 ## 打包
 
 ```bash
-pnpm run icon     # 生成 build/icon.png（纯 Node 画图标，不依赖图像库）
 pnpm run pack:dir # 免安装目录：release/win-unpacked/DSH-starter.exe（快，适合本地验证）
 pnpm run dist     # 当前平台的安装包（Windows 走 NSIS）
 ```
 
-`electron-builder.yml` 已经配好：Windows NSIS（可选安装目录、桌面快捷方式）、macOS dmg、Linux AppImage；`asar` 打包、`electronLanguages` 只留 `en-US` / `zh-CN` 两个 locale。
+`electron-builder.yml` 已经配好：Windows NSIS 安装包 + **单文件便携版**（`portable`，免安装）、macOS dmg、Linux AppImage；`asar` 打包、`electronLanguages` 只留 `en-US` / `zh-CN` 两个 locale。
+
+> 当前 release **未做代码签名**，Windows SmartScreen / macOS Gatekeeper 可能提示未知发布者。下载后建议先比对 release 附带的 `sha256sums.txt` 再运行。
 
 体积参考（Windows x64，Electron 45）：解包目录约 **310 MB**（其中 `DSH-starter.exe` 就是 Chromium 主体），安装包压缩后约 **110 MB**。这是 Electron 的固有成本，介意体积就该换 Tauri/纯浏览器方案。
 
@@ -152,11 +165,22 @@ pnpm run dist     # 当前平台的安装包（Windows 走 NSIS）
 - **空态会教**：没有工作区时给一行三步流程 + 「选择目录」
 - 后台隐藏跑 `dsh` 子进程（无控制台窗口）；就绪后**只在系统浏览器打开**（内嵌窗口已移除）
 - 四色主题（背景/卡片/主色/强调）：8 套 ColorHunt 风预设 + 自定义，**只作用于启动按钮和设置面板**；文字、边框、内凹输入面全部由四色推导，浅色主题也保证对比度
-- **高自定义**：大标题、品牌名、标题上方小字、就绪后那句、是否显示路径都能改（设置 → 文案，大标题留空则用工作区名），工作区可原地重命名；设置面板（内联浮卡）另有背景 / 配色 / 就绪方式 / 字号 / 高级（命令、模式、端口、参数、环境变量）
+- **高自定义**：窗口比例（16:9 / 16:10 / 21:9 / 2:1）与宽度占比可调、改完立即生效；大标题、品牌名、标题上方小字、就绪后那句、是否显示路径都能改（设置 → 文案，大标题留空则用工作区名），工作区可原地重命名；设置面板（内联浮卡）另有背景 / 配色 / 就绪方式 / 字号 / 高级（命令、模式、端口、参数、环境变量）
 - 可交互终端复用 DSH Web GUI 右侧栏；electron-builder 打包（NSIS/dmg/AppImage，ASCII 路径构建）
 
 已知未做：界面文案 i18n（目前只有中文）；首启引导；打包未签名。
 
+## 安全
+
+- **它会按你的配置执行命令**——这是功能，也意味着被篡改的 `settings.json` 等于任意命令执行。完整威胁模型见 [SECURITY.md](SECURITY.md)。
+- 不联网、无遥测、无更新检查；Web GUI 的 `?token=…` 始终掩码显示，复制走系统剪贴板，交给浏览器时只放行 `http:`/`https:`。
+- 渲染进程 `contextIsolation` + `sandbox` + CSP；新窗口一律 deny、禁止页面导航与 webview、权限请求默认全拒。
+- 漏洞请走私密披露（仓库 **Security → Advisories**），不要先开公开 issue。
+
+## 参与贡献
+
+见 [CONTRIBUTING.md](CONTRIBUTING.md)：环境、冒烟脚本、代码约定、提交前检查清单。
+
 ## License
 
-MIT
+MIT，见 [LICENSE](LICENSE)。

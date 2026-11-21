@@ -14,6 +14,12 @@ files:
   - out/**
   - package.json
   - '!**/*.map'
+
+# Runtime window icon lives outside the asar so `process.resourcesPath` can
+# point at it without extracting from the archive.
+extraResources:
+  - from: resources/icon.png
+    to: app-icon.png
 asar: true
 
 # Keep the shipped Chromium small: only the two locales the launcher speaks.
@@ -31,14 +37,23 @@ win:
     - target: nsis
       arch:
         - x64
+    # Single-file portable build (no installer). Settings still live in userData;
+    # point DSH_STARTER_USER_DATA at a folder next to the exe for a true portable.
+    - target: portable
+      arch:
+        - x64
 
 nsis:
+  artifactName: ${productName}-Setup-${version}.${ext}
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   shortcutName: DSH-starter
   deleteAppDataOnUninstall: false
+
+portable:
+  artifactName: ${productName}-${version}-portable.${ext}
 
 mac:
   icon: build/icon.png

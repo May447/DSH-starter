@@ -6,13 +6,24 @@
   "author": "DSH-starter contributors",
   "license": "MIT",
   "private": true,
+  "keywords": [
+    "deepseek",
+    "deepseek-harness",
+    "dsh",
+    "launcher",
+    "electron",
+    "desktop",
+    "game-launcher"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
-    "icon": "node scripts/gen-icon.mjs 1024 build/icon.png",
     "capture": "electron-vite build && electron . --no-sandbox --capture .dev-shots/launcher.png",
     "pack:dir": "electron-vite build && electron-builder --dir",
     "dist": "electron-vite build && electron-builder",

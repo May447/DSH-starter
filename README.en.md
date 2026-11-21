@@ -19,6 +19,18 @@ Chat, sessions, approvals and plugins all come from DSH itself — this project 
 
 v0.1. Working: Electron + React + electron-vite project, IPC contract, settings persistence, `dsh` child-process lifecycle (including ready-line parsing), the HoYoPlay-style shell, the xterm boot log, and packaging for Windows / macOS / Linux.
 
+## Install (no toolchain needed)
+
+Grab a build from [Releases](../../releases):
+
+| Artifact | Use |
+| --- | --- |
+| `DSH-starter-Setup-x.y.z.exe` | Normal install: pick a path, get desktop / start-menu shortcuts |
+| `DSH-starter-x.y.z-portable.exe` | Single-file portable build, no install |
+| `.dmg` / `.AppImage` | macOS / Linux |
+
+A working `dsh` is still required (on `PATH`, or an absolute path in Settings). **The launcher does not bundle dsh.**
+
 ## Requirements
 
 - Node.js ≥ 22 (verified on 24)
@@ -131,7 +143,6 @@ Design notes and decisions: [docs/DESIGN.md](docs/DESIGN.md). Hand-over notes (t
 ## Packaging
 
 ```bash
-pnpm run icon     # draw build/icon.png with plain Node, no image library
 pnpm run pack:dir # unpacked directory: release/win-unpacked/DSH-starter.exe
 pnpm run dist     # installer for the current platform (NSIS on Windows)
 ```
@@ -161,11 +172,22 @@ Size reference (Windows x64, Electron 45): the unpacked directory is ~310 MB (mo
 - **Empty state that teaches**: three short steps and a "pick a folder" action when no workspace exists
 - Runs `dsh` as a hidden background child (no console window); on ready it opens **only in your system browser**
 - Four-colour theme (background / surface / primary / accent): eight presets plus custom, applied **only to the launch button and the settings panel**, with text contrast derived automatically
-- **Highly customisable**: headline, brand name, kicker line, ready sentence and path visibility are all editable (Settings → 文案; an empty headline falls back to the workspace name), and workspaces can be renamed in place; the panel also carries backdrop / palette / open-on-ready / font size / advanced (command, profile, port, args, env)
+- **Highly customisable**: window aspect ratio (16:9 / 16:10 / 21:9 / 2:1) and its share of the work area apply live, and the headline, brand name, kicker line, ready sentence and path visibility are all editable (Settings → 文案; an empty headline falls back to the workspace name), and workspaces can be renamed in place; the panel also carries backdrop / palette / open-on-ready / font size / advanced (command, profile, port, args, env)
 - Interactive terminal stays in the DSH Web GUI sidebar; packaging via electron-builder (NSIS/dmg/AppImage)
 
 Known gaps: UI strings are Chinese-only (no i18n); no first-run tour; builds are unsigned.
 
+## Security
+
+- **It runs the command you configure** — that is the feature, and it also means a tampered `settings.json` is arbitrary code execution. Threat model: [SECURITY.md](SECURITY.md).
+- No network access of its own, no telemetry, no update pings. The Web GUI `?token=…` is always masked, copying goes through the system clipboard, and only http/https URLs are handed to the browser.
+- Renderer runs with `contextIsolation` + `sandbox` + CSP; new windows are denied, navigation and webviews are blocked, permission requests are refused.
+- Please report vulnerabilities privately (repo **Security → Advisories**).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the environment, the smoke script, and the pre-commit checklist.
+
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).

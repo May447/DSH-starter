@@ -57,8 +57,11 @@ src/
       shell.css             HoYoPlay 式外壳（覆盖层，含玻璃配方与抽屉换肤）
       overlay.css / theme-settings.css / terminal.css  局部覆盖
 scripts/
-  gen-icon.mjs       纯 Node 画应用图标（无图像库依赖）
   smoke.ps1          无界面冒烟：启动 → 截图 → DOM dump → 收尸
+build/icon.png      应用图标（草莓，256×256；electron-builder 由它生成 exe/ico/dmg 图标）
+resources/icon.png  运行时窗口图标（extraResources → app-icon.png）
+                    ⚠️ 换图标要同时换三处：build/icon.png、resources/icon.png、
+                    src/renderer/src/assets/logo.png（左上角品牌标，128×128）
 docs/
   DESIGN.md          设计说明与决策记录
   HANDOVER.md        本文件
@@ -68,6 +71,7 @@ docs/
 
 HoYoPlay / 米哈游启动器路线，**镜像布局**：工具在左上，唯一的动作在右下，中间留给壁纸和作品名。
 
+- **窗口形状可配**：不是写死的盒子。`settings.window = { ratio, widthFactor }`，主进程用 `shared/window-shape.ts` 的 `sizeFor()` 换算成像素：宽 = 工作区宽 × widthFactor，高 = 宽 ÷ 比例，再按工作区 96%/90% 封顶；`center: true`，最小 960×540。默认 16:9 + 80%，本机（2560×1600 @150%，CSS 1707×1019）得到 1367×770。设置里换比例或拖占比会**立即**改窗口（`settingsSave` 落盘后调 `applyWindowShape`），不需要重启
 - **整屏壁纸**：内置 6 套渐变，也可选本地图片（`imagePath`），暗度 0–100%、模糊 0–24px。两个滑块在拖动时用本地值实时反馈，松手后 220ms 才写盘（早期每次 `input` 都保存，`saving` 会把滑块 `disabled` 掉，因此“拖不动”）
 - **左上**：品牌名（可改）+ 「更多」「设置」两个工具按钮；右上角是原生窗口按钮
   - ⚠️ 标题栏必须是 `z-index: 60`：`.stage` 也带 `z-index: 1` 且在 DOM 里排在后面，两者同层级时舞台会盖住标题栏向下溢出的「更多」面板 —— 菜单看得见、但每次点都落在 `.stage` 上，表现为“点了没反应”。`elementFromPoint` 一测就现形
@@ -109,6 +113,10 @@ HoYoPlay / 米哈游启动器路线，**镜像布局**：工具在左上，唯�
     "imagePath": null,          // 本地图片绝对路径，null = 用渐变
     "dim": 0.35,
     "blur": 0
+  },
+  "window": {                   // 窗口形状（比例 + 占工作区宽度）
+    "ratio": "16:9",           // 16:9 | 16:10 | 21:9 | 2:1
+    "widthFactor": 0.8
   },
   "copy": {                     // 主界面文案（高自定义的入口）
     "appName": "DSH-starter",   // 左上角品牌名，也是窗口标题
@@ -182,10 +190,10 @@ node node_modules\electron-builder\cli.js --dir --config.npmRebuild=false --conf
 ## 8. 已知问题 / 遗留
 
 - **没有自动化 UI 测试**：只有 typecheck + build + 冒烟截图（`-Ui` 可以拍到抽屉/面板），视觉质量仍靠人看。
-- **界面文案没有 i18n**：所有字符串写死在 JSX 里，只有中文；README 已补英文版（`README.en.md`）。
+- **界面文案没有 i18n**：所有字符串写死在 JSX 里，只有中文；README 有英文版（`README.en.md`），界面本身没做。
 - **无首启引导**：空态卡片承担了「第一步」的说明，但没有分步 tour。
 - **打包未签名**（NSIS 会触发 SmartScreen）。
-- **便携版目录（`DSH-starter-app`）是旧构建**，不含 HoYoPlay 外壳与自定义背景；需要重新打包才一致。
+- **构建产物不入库**：`release/` 是 electron-builder 输出目录（gitignore），不要拿旧构建当基线；发版统一走 `pnpm dist:win`。
 
 ## 9. 关键决策记录
 
@@ -197,6 +205,8 @@ node node_modules\electron-builder\cli.js --dir --config.npmRebuild=false --conf
 | 四色主题只作用于按钮 + 设置 | 主界面以壁纸为主，避免主题色把整屏压成黑色（旧 bug 根因：`.app` 背景写死深色） |
 | 自定义背景只存原图路径 | 用户选择：不复制、不占额外空间；显示时主进程读图 → 缩到 2560 → JPEG data URL |
 | 工作区收进设置 | 用户反馈：左栏太占视觉、不够简洁 |
+| 设置面板不写说明文字 | 用户连续两轮要求删注释：分区说明段落、字段提示、面板副标题全部去掉。信息改由「标签 + 控件 + 数值徽章 + 报错」表达；空列表保留一句状态（“没有附加参数。”） |
+| 窗口比例可配 | 用户要 16:9 且要能改。用 `ratio + widthFactor` 而不是写死宽高，换显示器/缩放都不会失效 |
 
 ## 10. 下一步建议
 
