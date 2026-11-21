@@ -1,7 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import { app, BrowserWindow, clipboard, desktopCapturer, dialog, ipcMain, nativeImage, shell } from 'electron'
-import { CHANNELS, type LaunchStatus, type LauncherSettings, type StartOptions, type WorkspaceEntry } from '@shared/contract'
+import { app, BrowserWindow, clipboard, desktopCapturer, dialog, ipcMain, nativeImage, screen, session, shell } from 'electron'
+import { CHANNELS, type LaunchStatus, type LauncherSettings, type LauncherWindow, type StartOptions, type WorkspaceEntry } from '@shared/contract'
+import { sizeFor } from '@shared/window-shape'
 import { LaunchEngine } from './engine'
 import { SettingsStore } from './settings-store'
 
@@ -69,13 +70,19 @@ const engine = new LaunchEngine()
 
 let launcherWindow: BrowserWindow | undefined
 
-function createLauncherWindow(): BrowserWindow {
+function createLauncherWindow(shape: LauncherWindow): BrowserWindow {
+  /* Shape comes from settings (ratio + share of the work area), never a fixed box. */
+  const { width, height } = sizeFor(shape, screen.getPrimaryDisplay().workAreaSize)
+
   const window = new BrowserWindow({
-    width: 1180,
-    height: 760,
-    minWidth: 940,
-    minHeight: 620,
+    width,
+    height,
+    minWidth: 960,
+    minHeight: 540,
+    center: true,
     show: false,
+    /* Window/taskbar icon; packaged builds ship it via extraResources. */
+    icon: app.isPackaged ? join(process.resourcesPath, 'app-icon.png') : join(app.getAppPath(), 'resources', 'icon.png'),
     backgroundColor: '#08090d',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'hidden',
     ...(process.platform === 'win32'
@@ -92,7 +99,9 @@ function createLauncherWindow(): BrowserWindow {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
-      sandbox: false,
+      /* Sandboxed: the preload only needs ipcRenderer/contextBridge/webUtils, and
+         all three work in a sandboxed preload — verified with a real file drop. */
+      sandbox: true,
       /*
        * A launcher window that an OS-occluded browser window covers still has to
        * paint: Chromium otherwise throttles it, and both the visuals and the
@@ -111,6 +120,16 @@ function createLauncherWindow(): BrowserWindow {
 
   window.on('closed', () => { launcherWindow = undefined })
   return window
+}
+
+/** Re-apply the shape while running (the settings panel changes it live). */
+function applyWindowShape(shape: LauncherWindow): void {
+  if (launcherWindow === undefined || launcherWindow.isDestroyed()) return
+  const { width, height } = sizeFor(shape, screen.getPrimaryDisplay().workAreaSize)
+  const [currentWidth, currentHeight] = launcherWindow.getSize()
+  if (currentWidth === width && currentHeight === height) return
+  launcherWindow.setSize(width, height)
+  launcherWindow.center()
 }
 
 /** Only hand http(s) URLs to the OS; never `file:` etc. */
@@ -148,7 +167,11 @@ async function startLaunch(options?: StartOptions): Promise<LaunchStatus> {
 
 function registerIpc(): void {
   ipcMain.handle(CHANNELS.settingsGet, async () => await settings.get())
-  ipcMain.handle(CHANNELS.settingsSave, async (_event, next: LauncherSettings) => await settings.save(next))
+  ipcMain.handle(CHANNELS.settingsSave, async (_event, next: LauncherSettings) => {
+    const saved = await settings.save(next)
+    applyWindowShape(saved.window)
+    return saved
+  })
 
   ipcMain.handle(CHANNELS.workspacePick, async (): Promise<WorkspaceEntry | null> => {
     const result = await dialog.showOpenDialog({ properties: ['openDirectory'], title: 'Choose a workspace for DSH' })
@@ -198,6 +221,10 @@ function registerIpc(): void {
    */
   ipcMain.handle(CHANNELS.backgroundLoad, async (_event, path: unknown): Promise<string | null> => {
     if (typeof path !== 'string' || path === '') return null
+    /* Only the picture the user actually selected is readable. Without this the
+       channel is an arbitrary-image-to-base64 gadget for a compromised renderer. */
+    const current = await settings.get()
+    if (current.background.imagePath === null || !samePath(current.background.imagePath, path)) return null
     const image = nativeImage.createFromPath(path)
     if (image.isEmpty()) return null
     const size = image.getSize()
@@ -362,9 +389,52 @@ async function runSmoke(window: BrowserWindow): Promise<void> {
   app.quit()
 }
 
-app.whenReady().then(() => {
+/*
+ * One launcher per machine: two instances would spawn two `dsh` children and
+ * race on the same settings.json.
+ */
+/* Smoke runs must not be blocked by a launcher the developer already has open. */
+const hasSingleInstanceLock = smokeMode ? true : app.requestSingleInstanceLock()
+
+app.on('second-instance', () => {
+  if (launcherWindow === undefined || launcherWindow.isDestroyed()) return
+  if (launcherWindow.isMinimized()) launcherWindow.restore()
+  launcherWindow.focus()
+})
+
+/** Deny every renderer capability the launcher does not use. */
+function hardenSession(): void {
+  const allowed = new Set(smokeMode ? ['media', 'display-capture'] : [])
+  session.defaultSession.setPermissionRequestHandler((_contents, permission, callback) => {
+    callback(allowed.has(permission))
+  })
+  session.defaultSession.setPermissionCheckHandler((_contents, permission) => allowed.has(permission))
+}
+
+/**
+ * The renderer only ever shows local files, so any navigation or new window is
+ * either a bug or an attempt to escape: refuse it, and hand http(s) URLs to the
+ * user's real browser instead of an Electron window.
+ */
+function hardenWebContents(contents: Electron.WebContents): void {
+  contents.setWindowOpenHandler(({ url }) => {
+    if (isHttpUrl(url)) void shell.openExternal(url)
+    return { action: 'deny' }
+  })
+  contents.on('will-navigate', (event, url) => {
+    if (url !== contents.getURL()) event.preventDefault()
+  })
+  contents.on('will-attach-webview', (event) => {
+    event.preventDefault()
+  })
+}
+
+if (hasSingleInstanceLock) void app.whenReady().then(async () => {
   registerIpc()
-  launcherWindow = createLauncherWindow()
+  hardenSession()
+  app.on('web-contents-created', (_event, contents) => { hardenWebContents(contents) })
+  const current = await settings.get()
+  launcherWindow = createLauncherWindow(current.window)
 
   if (smokeMode) {
     launcherWindow.webContents.once('did-finish-load', () => {
@@ -375,6 +445,8 @@ app.whenReady().then(() => {
     })
   }
 })
+
+if (!hasSingleInstanceLock) app.quit()
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
@@ -402,5 +474,7 @@ app.on('before-quit', (event) => {
 })
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) launcherWindow = createLauncherWindow()
+  if (BrowserWindow.getAllWindows().length === 0) {
+    void settings.get().then((current) => { launcherWindow = createLauncherWindow(current.window) })
+  }
 })
