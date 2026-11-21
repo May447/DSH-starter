@@ -1,4 +1,5 @@
 import type { SVGProps } from 'react'
+import logoUrl from '../assets/logo.png'
 
 /** Shared stroke defaults so every icon stays visually consistent. */
 function strokeProps(size: number): Pick<SVGProps<SVGSVGElement>, 'width' | 'height' | 'viewBox' | 'fill' | 'stroke' | 'strokeWidth' | 'strokeLinecap' | 'strokeLinejoin'> {
@@ -18,26 +19,13 @@ export interface IconProps {
   size?: number
 }
 
+/**
+ * Brand mark: the strawberry this project also ships as its app icon
+ * (build/icon.png). A bitmap, because the artwork is a raster illustration and
+ * a redrawn SVG would not match the exe icon.
+ */
 export function IconLogo({ size = 20 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="dsh-logo-gradient" x1="3" y1="3" x2="21" y2="21" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#8b96ff" />
-          <stop offset="1" stopColor="#b07bff" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M12 2.6 21.4 12 12 21.4 2.6 12Z"
-        fill="url(#dsh-logo-gradient)"
-        fillOpacity="0.16"
-        stroke="url(#dsh-logo-gradient)"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path d="M12 7.2 16.8 12 12 16.8 7.2 12Z" fill="url(#dsh-logo-gradient)" fillOpacity="0.85" />
-    </svg>
-  )
+  return <img className="brand-logo" src={logoUrl} width={size} height={size} alt="" aria-hidden="true" />
 }
 
 export function IconGear({ size = 16 }: IconProps) {

@@ -1,4 +1,4 @@
-import type { LauncherBackground, LauncherCopy, LauncherSettings, LauncherTheme } from '@shared/contract'
+import type { LauncherBackground, LauncherCopy, LauncherSettings, LauncherTheme, LauncherWindow } from '@shared/contract'
 
 /** Shipped theme: only the launch button and the settings panel read these. */
 export const DEFAULT_THEME: LauncherTheme = {
@@ -26,6 +26,12 @@ export const DEFAULT_COPY: LauncherCopy = {
   showPath: true,
 }
 
+/** Shipped window shape: 16:9 at 80% of the work area (1366x768 on a 1707px screen). */
+export const DEFAULT_WINDOW: LauncherWindow = {
+  ratio: '16:9',
+  widthFactor: 0.8,
+}
+
 /** Longest accepted value per copy field, so a pasted essay cannot break layout. */
 const COPY_LIMITS = { appName: 40, title: 60, kicker: 48, readyNote: 120 } as const
 
@@ -46,6 +52,7 @@ export const DEFAULT_SETTINGS: LauncherSettings = {
   theme: { ...DEFAULT_THEME },
   background: { ...DEFAULT_BACKGROUND },
   copy: { ...DEFAULT_COPY },
+  window: { ...DEFAULT_WINDOW },
 }
 
 /** Normalize user input to `#rrggbb`, or return undefined when it is not a colour. */
@@ -105,6 +112,16 @@ export function normalizeSettings(raw: unknown): LauncherSettings {
       const id = typeof candidate.id === 'string' && candidate.id !== '' ? candidate.id : candidate.path
       return [{ id, name, path: candidate.path }]
     })
+  }
+  if (typeof input.window === 'object' && input.window !== null && !Array.isArray(input.window)) {
+    const shape = input.window as Record<string, unknown>
+    merged.window = {
+      ratio: typeof shape.ratio === 'string' && shape.ratio !== '' ? shape.ratio : DEFAULT_WINDOW.ratio,
+      widthFactor:
+        typeof shape.widthFactor === 'number' && shape.widthFactor >= 0.5 && shape.widthFactor <= 1
+          ? shape.widthFactor
+          : DEFAULT_WINDOW.widthFactor,
+    }
   }
   if (typeof input.copy === 'object' && input.copy !== null && !Array.isArray(input.copy)) {
     const copy = input.copy as Record<string, unknown>

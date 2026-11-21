@@ -8,7 +8,7 @@
  */
 
 /** Bumped whenever a bridge shape changes incompatibly. */
-export const CONTRACT_VERSION = 5
+export const CONTRACT_VERSION = 6
 
 /**
  * User-rewritable strings and display switches.
@@ -43,6 +43,18 @@ export interface LauncherTheme {
   primary: string
   /** Secondary pop (links, ready state, success). */
   accent: string
+}
+
+/**
+ * Window shape. The launcher sizes itself from the primary work area and these
+ * two numbers, so the same build reads correctly on a 13" laptop and a 4K
+ * monitor instead of hard-coding one rectangle.
+ */
+export interface LauncherWindow {
+  /** Aspect ratio preset id: `16:9` | `16:10` | `21:9` | `2:1`. */
+  ratio: string
+  /** Fraction of the work area width to occupy, 0.5…1. */
+  widthFactor: number
 }
 
 /** The full-screen launcher backdrop. */
@@ -104,6 +116,8 @@ export interface LauncherSettings {
   background: LauncherBackground
   /** Rewritable main-screen strings and display switches. */
   copy: LauncherCopy
+  /** Window proportion; applied on launch and whenever it changes. */
+  window: LauncherWindow
 }
 
 /** Current launch state, mirrored into the renderer on every transition. */

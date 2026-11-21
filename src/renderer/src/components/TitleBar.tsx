@@ -21,7 +21,7 @@ export function TitleBar({ appName, children }: TitleBarProps) {
     <header className="titlebar">
       <span className="titlebar__brand">
         <span className="titlebar__mark">
-          <IconLogo size={18} />
+          <IconLogo size={26} />
         </span>
         <span className="titlebar__name">{appName}</span>
       </span>

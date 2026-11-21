@@ -21,7 +21,7 @@ export function ArgsEditor({ args, onChange }: ArgsEditorProps) {
 
   return (
     <div className="rows">
-      {args.length === 0 ? <p className="rows__empty">没有附加参数。启动器自己会补上 --no-open --port。</p> : null}
+      {args.length === 0 ? <p className="rows__empty">没有附加参数。</p> : null}
       {args.map((arg, index) => (
         <div className="row" key={arg.id}>
           <span className="row__index">{index + 1}</span>

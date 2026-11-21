@@ -23,7 +23,7 @@ export function EnvEditor({ rows, errors, onChange }: EnvEditorProps) {
 
   return (
     <div className="rows">
-      {rows.length === 0 ? <p className="rows__empty">没有环境变量覆盖。比如加一个 DSH_HOME 指向另一套数据目录。</p> : null}
+      {rows.length === 0 ? <p className="rows__empty">没有环境变量覆盖。</p> : null}
       {rows.map((row) => {
         const error = errors[row.id]
         return (

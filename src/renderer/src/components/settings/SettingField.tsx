@@ -4,15 +4,20 @@ export interface SettingFieldProps {
   /** Stable id used by the `<label for>` of the field's control. */
   id: string
   label: string
-  hint?: string
   error?: string
-  /** Extra inline content placed after the control (ranges, counters). */
+  /** Extra inline content placed after the label (ranges, counters). */
   aside?: ReactNode
   children: ReactNode
 }
 
-/** Label + control + hint/error, so every setting row looks the same. */
-export function SettingField({ id, label, hint, error, aside, children }: SettingFieldProps) {
+/**
+ * Label + control + optional error, so every setting row looks the same.
+ *
+ * Deliberately no description line: the panel is dense enough that captions had
+ * to go. Errors are the only exception — they appear only when something is
+ * actually wrong.
+ */
+export function SettingField({ id, label, error, aside, children }: SettingFieldProps) {
   const invalid = error !== undefined
   return (
     <div className="field" data-invalid={invalid}>
@@ -23,11 +28,7 @@ export function SettingField({ id, label, hint, error, aside, children }: Settin
         {aside === undefined ? null : <span className="field__aside">{aside}</span>}
       </div>
       {children}
-      {invalid ? (
-        <p className="field__error">{error}</p>
-      ) : hint === undefined ? null : (
-        <p className="field__hint">{hint}</p>
-      )}
+      {invalid ? <p className="field__error">{error}</p> : null}
     </div>
   )
 }

@@ -38,10 +38,6 @@ export function ThemeSection({ theme, saving, onApply }: ThemeSectionProps) {
   return (
     <section className="group">
       <h3 className="group__title">外观</h3>
-      <p className="group__note">
-        选一套预置配色，再按需要改这四个颜色。文字、边框和悬停色会按对比度自动推导，不会出现看不清的情况。
-      </p>
-
       <div className="theme-grid" role="radiogroup" aria-label="预置配色">
         {THEME_PRESETS.map((candidate) => {
           const active = theme.preset === candidate.id
@@ -71,7 +67,7 @@ export function ThemeSection({ theme, saving, onApply }: ThemeSectionProps) {
 
       {custom ? <p className="theme-state">当前是自定义配色，选上面任意一套可以还原。</p> : null}
 
-      <SettingField id="settings-theme-slots" label="四个颜色" hint="点色块取色，或直接输入 #rrggbb。">
+      <SettingField id="settings-theme-slots" label="四个颜色">
         <div className="theme-slots">
           {SLOTS.map((slot) => (
             <label className="theme-slot" key={slot.key}>

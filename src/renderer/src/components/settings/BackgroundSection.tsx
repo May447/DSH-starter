@@ -55,10 +55,6 @@ export function BackgroundSection({ background, saving, onApply, onPickImage }: 
   return (
     <section className="group">
       <h3 className="group__title">背景</h3>
-      <p className="group__note">
-        整屏壁纸在这里换，也可以直接把图片拖进窗口。颜色只影响启动按钮和这个面板，主界面始终是白色文字。
-      </p>
-
       <div className="bg-grid" role="radiogroup" aria-label="内置背景">
         {BACKGROUND_PRESETS.map((preset) => (
           <button
@@ -81,7 +77,13 @@ export function BackgroundSection({ background, saving, onApply, onPickImage }: 
       <SettingField
         id="settings-bg-image"
         label="自己的图片"
-        hint={background.imagePath === null ? 'PNG / JPG / WEBP，选好立刻生效。' : background.imagePath}
+        aside={
+          background.imagePath === null ? undefined : (
+            <span className="value-badge" title={background.imagePath}>
+              {background.imagePath.split(/[\\/]/).pop()}
+            </span>
+          )
+        }
       >
         <div className="bg-image-actions">
           <Button variant="ghost" size="sm" onClick={onPickImage} disabled={saving}>
@@ -98,7 +100,6 @@ export function BackgroundSection({ background, saving, onApply, onPickImage }: 
       <SettingField
         id="settings-bg-dim"
         label="暗度"
-        hint="压暗背景，保证白字看清。"
         aside={<span className="value-badge">{Math.round(dim * 100)}%</span>}
       >
         <input
@@ -116,7 +117,6 @@ export function BackgroundSection({ background, saving, onApply, onPickImage }: 
       <SettingField
         id="settings-bg-blur"
         label="模糊"
-        hint="0–24 px，背景太花时用。"
         aside={<span className="value-badge">{blur} px</span>}
       >
         <input

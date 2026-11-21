@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { LauncherBackground, LauncherCopy, LauncherSettings, LauncherTheme } from '@shared/contract'
+import type { LauncherBackground, LauncherCopy, LauncherSettings, LauncherTheme, LauncherWindow } from '@shared/contract'
 import { messageOf } from '../lib/errors'
 import {
   FONT_SIZE_RANGE,
@@ -17,6 +17,7 @@ import type { SegmentedOption } from './settings/SegmentedControl'
 import { SettingField } from './settings/SettingField'
 import { BackgroundSection } from './settings/BackgroundSection'
 import { ThemeSection } from './settings/ThemeSection'
+import { WindowSection } from './settings/WindowSection'
 import { Button } from './ui/Button'
 import { IconClose, IconChevron, IconPencil, IconTrash } from './icons'
 
@@ -140,6 +141,16 @@ export function SettingsDrawer({
     }
   }
 
+  /* Window shape is applied by the main process as soon as the save lands. */
+  const applyWindow = async (shape: LauncherWindow): Promise<void> => {
+    setSaveError(undefined)
+    try {
+      await onSave({ ...settings, window: shape })
+    } catch (error) {
+      setSaveError(messageOf(error))
+    }
+  }
+
   /* Copy edits save the same way: the whole point is watching the stage change. */
   const applyCopy = async (copy: LauncherCopy): Promise<void> => {
     setSaveError(undefined)
@@ -194,10 +205,7 @@ export function SettingsDrawer({
     >
       <aside className="drawer" role="dialog" aria-modal="true" aria-label="启动器设置">
         <header className="drawer__head">
-          <div>
-            <h2 className="drawer__title">设置</h2>
-            <p className="drawer__subtitle">改动写入 userData/settings.json，影响下一次启动。</p>
-          </div>
+          <h2 className="drawer__title">设置</h2>
           <button type="button" className="drawer__close" onClick={onClose} aria-label="关闭设置">
             <IconClose size={16} />
           </button>
@@ -217,6 +225,8 @@ export function SettingsDrawer({
             onApply={(theme) => { void applyTheme(theme) }}
           />
 
+          <WindowSection shape={settings.window} onApply={(next) => { void applyWindow(next) }} />
+
           <CopySection copy={settings.copy} onApply={(next) => { void applyCopy(next) }} />
 
           <section className="group">
@@ -229,7 +239,6 @@ export function SettingsDrawer({
             >
               <IconChevron size={14} dir={advanced ? 'up' : 'down'} />
               <span className="group__disclosure-title">高级设置</span>
-              <span className="group__disclosure-hint">dsh 路径 / 启动模式 / 端口 / 参数</span>
             </button>
 
             {advanced ? (
@@ -237,7 +246,6 @@ export function SettingsDrawer({
                 <SettingField
                   id="settings-command"
                   label="dsh 程序位置"
-                  hint="绝对路径最稳，也可以填 PATH 上的名字（例如 dsh）。"
                   error={errors.dshCommand}
                 >
               <input
@@ -255,7 +263,6 @@ export function SettingsDrawer({
             <SettingField
               id="settings-profile"
               label="启动模式"
-              hint="一般保持 web；换成别的模式启动器就接不到 Web GUI 了。"
               error={errors.profile}
             >
               <input
@@ -273,7 +280,6 @@ export function SettingsDrawer({
             <SettingField
               id="settings-port"
               label="端口"
-              hint={`${String(PORT_RANGE.min)} = 让系统挑一个空闲端口，避免和已开的 DSH 打架。`}
               error={errors.port}
             >
               <input
@@ -288,7 +294,7 @@ export function SettingsDrawer({
               />
             </SettingField>
 
-            <SettingField id="settings-args" label="附加参数" hint="按顺序插在启动器自己的 --no-open --port 之前。">
+            <SettingField id="settings-args" label="附加参数">
               <ArgsEditor
                 args={draft.extraArgs}
                 onChange={(extraArgs) => {
@@ -297,9 +303,7 @@ export function SettingsDrawer({
               />
             </SettingField>
               </>
-            ) : (
-              <p className="group__note">用默认的 dsh 就不用管这里；换了安装位置或要指定 DSH_HOME 再展开。</p>
-            )}
+            ) : null}
           </section>
 
           <section className="group">
@@ -307,7 +311,6 @@ export function SettingsDrawer({
             <SettingField
               id="settings-open-on-ready"
               label="自动打开方式"
-              hint="启动器拿到就绪 URL 之后，默认怎么把 Web GUI 交给你。"
             >
               <SegmentedControl
                 name="就绪后自动打开"
@@ -325,7 +328,6 @@ export function SettingsDrawer({
             <SettingField
               id="settings-font-size"
               label="日志字号"
-              hint={`${String(FONT_SIZE_RANGE.min)}–${String(FONT_SIZE_RANGE.max)} px，立即生效。`}
               error={errors.terminalFontSize}
               aside={<span className="value-badge">{draft.terminalFontSize} px</span>}
             >
@@ -347,7 +349,6 @@ export function SettingsDrawer({
           {advanced ? (
             <section className="group">
               <h3 className="group__title">环境变量</h3>
-              <p className="group__note">传给子进程的覆盖值，DSH_HOME、代理之类都放这里。键名会和系统环境合并。</p>
               <EnvEditor
                 rows={draft.env}
                 errors={errors.env ?? {}}
@@ -360,11 +361,8 @@ export function SettingsDrawer({
 
           <section className="group" data-action="workspaces">
             <h3 className="group__title">工作区</h3>
-            <p className="group__note">
-              启动时 dsh 会在这个目录里干活。点一行选中它，主界面显示的就是选中的工作区；没有工作区时会退回用户主目录。
-            </p>
             {settings.workspaces.length === 0 ? (
-              <p className="rows__empty">还没有工作区，点下面的按钮挑一个目录。</p>
+              <p className="rows__empty">还没有工作区。</p>
             ) : (
               <ul className="ws-list">
                 {settings.workspaces.map((workspace) => (

@@ -115,10 +115,7 @@
   white-space: nowrap;
 }
 
-.titlebar__mark {
-  border-color: rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1);
-}
+
 
 /* Utility controls sit right after the brand, still inside the drag strip. */
 .titlebar__tools {
@@ -148,7 +145,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
-  padding: 0 clamp(28px, 5vw, 72px) clamp(84px, 12vh, 132px);
+  /* Symmetric: the dock lives bottom-right, the copy is left-aligned, so the
+     block can sit optically centred instead of being pushed up by bottom inset. */
+  padding: 0 clamp(28px, 5vw, 72px);
   background: transparent;
   min-height: 0;
   /* One implicit row; centring it keeps the stage block optically mid-screen

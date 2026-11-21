@@ -59,11 +59,7 @@ export function CopySection({ copy, onApply }: CopySectionProps) {
   return (
     <section className="group" data-action="copysec">
       <h3 className="group__title">文案</h3>
-      <p className="group__note">
-        主界面上的字都是数据，随时可以改。留空的小字会被隐藏；品牌名留空则恢复默认。
-      </p>
-
-      <SettingField id="settings-copy-title" label="大标题" hint="中间那行大字；留空则用当前工作区的名字。">
+      <SettingField id="settings-copy-title" label="大标题">
         <input
           id="settings-copy-title"
           className="input"
@@ -74,7 +70,7 @@ export function CopySection({ copy, onApply }: CopySectionProps) {
         />
       </SettingField>
 
-      <SettingField id="settings-copy-app-name" label="品牌名" hint="左上角那行字，也是窗口标题里的名字。">
+      <SettingField id="settings-copy-app-name" label="品牌名">
         <input
           id="settings-copy-app-name"
           className="input"
@@ -85,7 +81,7 @@ export function CopySection({ copy, onApply }: CopySectionProps) {
         />
       </SettingField>
 
-      <SettingField id="settings-copy-kicker" label="标题上方小字" hint="工作区标题上面那行大写副标；留空即隐藏。">
+      <SettingField id="settings-copy-kicker" label="标题上方小字">
         <input
           id="settings-copy-kicker"
           className="input input--mono"
@@ -96,11 +92,7 @@ export function CopySection({ copy, onApply }: CopySectionProps) {
         />
       </SettingField>
 
-      <SettingField
-        id="settings-copy-ready-note"
-        label="就绪后那句"
-        hint="Web GUI 起来之后标题下面的一句话；留空用内置文案。"
-      >
+      <SettingField id="settings-copy-ready-note" label="就绪后那句">
         <input
           id="settings-copy-ready-note"
           className="input"
@@ -111,7 +103,7 @@ export function CopySection({ copy, onApply }: CopySectionProps) {
         />
       </SettingField>
 
-      <SettingField id="settings-copy-show-path" label="工作区路径" hint="标题下面那行等宽字体路径。">
+      <SettingField id="settings-copy-show-path" label="工作区路径">
         <SegmentedControl
           name="显示工作区路径"
           value={copy.showPath ? 'show' : 'hide'}
