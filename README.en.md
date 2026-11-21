@@ -4,6 +4,10 @@
 
 **English** · [简体中文](README.md)
 
+[![Release](https://img.shields.io/github/v/release/May447/DSH-starter?label=release)](https://github.com/May447/DSH-starter/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/May447/DSH-starter/total)](https://github.com/May447/DSH-starter/releases)
+[![License](https://img.shields.io/github/license/May447/DSH-starter)](LICENSE)
+
 DSH-starter is a **front door + process supervisor**, not another agent runtime. It does four things:
 
 - **Workspace cards**: keep your usual project folders in the launcher, pick one as the `cwd`
@@ -21,12 +25,12 @@ v0.1. Working: Electron + React + electron-vite project, IPC contract, settings 
 
 ## Install (no toolchain needed)
 
-Grab a build from [Releases](../../releases):
+Grab a build from [Releases](https://github.com/May447/DSH-starter/releases/latest) (current: **v0.1.0**; the version in each filename changes with the release):
 
 | Artifact | Use |
 | --- | --- |
-| `DSH-starter-Setup-x.y.z.exe` | Normal install: pick a path, get desktop / start-menu shortcuts |
-| `DSH-starter-x.y.z-portable.exe` | Single-file portable build, no install |
+| `DSH-starter-Setup-0.1.0.exe` | Normal install: pick a path, get desktop / start-menu shortcuts |
+| `DSH-starter-0.1.0-portable.exe` | Single-file portable build, no install |
 | `.dmg` / `.AppImage` | macOS / Linux |
 
 A working `dsh` is still required (on `PATH`, or an absolute path in Settings). **The launcher does not bundle dsh.**
