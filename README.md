@@ -32,12 +32,6 @@ DSH-starter 是一层**前端门面 + 进程管理**，不是另一个 agent 运
 - Node.js ≥ 22
 - pnpm ≥ 10
 
-## 快速开始
-
-```bash
-pnpm install
-pnpm dev
-```
 
 默认配置：`dshCommand=dsh`、`profile=web`、`port=0`（让系统挑空闲端口）、`openOnReady=external`。
 第一次启动如果找不到 `dsh`，在设置里填绝对路径（Windows 上可以是 `dsh.cmd`）。
