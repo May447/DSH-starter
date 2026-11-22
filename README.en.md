@@ -4,9 +4,9 @@
 
 **English** · [简体中文](README.md)
 
-[![Release](https://img.shields.io/github/v/release/May447/DSH-starter?label=release)](https://github.com/May447/DSH-starter/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/May447/DSH-starter/total)](https://github.com/May447/DSH-starter/releases)
-[![License](https://img.shields.io/github/license/May447/DSH-starter)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/May447/dsh-Workspace-Launcher?label=release)](https://github.com/May447/dsh-Workspace-Launcher/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/May447/dsh-Workspace-Launcher/total)](https://github.com/May447/dsh-Workspace-Launcher/releases)
+[![License](https://img.shields.io/github/license/May447/dsh-Workspace-Launcher)](LICENSE)
 
 DSH-starter is a **front door + process supervisor**, not another agent runtime. It does four things:
 
@@ -41,7 +41,7 @@ v0.1. Working: Electron + React + electron-vite project, IPC contract, settings 
 
 ## Install (no toolchain needed)
 
-Grab a build from [Releases](https://github.com/May447/DSH-starter/releases/latest) (current: **v0.1.0**; the version in each filename changes with the release):
+Grab a build from [Releases](https://github.com/May447/dsh-Workspace-Launcher/releases/latest) (current: **v0.1.0**; the version in each filename changes with the release):
 
 | Artifact | Use |
 | --- | --- |

@@ -4,9 +4,9 @@
 
 [English](README.en.md) · **简体中文**
 
-[![Release](https://img.shields.io/github/v/release/May447/DSH-starter?label=release)](https://github.com/May447/DSH-starter/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/May447/DSH-starter/total)](https://github.com/May447/DSH-starter/releases)
-[![License](https://img.shields.io/github/license/May447/DSH-starter)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/May447/dsh-Workspace-Launcher?label=release)](https://github.com/May447/dsh-Workspace-Launcher/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/May447/dsh-Workspace-Launcher/total)](https://github.com/May447/dsh-Workspace-Launcher/releases)
+[![License](https://img.shields.io/github/license/May447/dsh-Workspace-Launcher)](LICENSE)
 
 DSH-starter 是一层**前端门面 + 进程管理**，不是另一个 agent 运行时。它负责：
 
@@ -41,7 +41,7 @@ v0.1 可用。已落地：Electron + React + electron-vite 工程、IPC 契约�
 
 ## 安装（不想编译）
 
-去 [Releases](https://github.com/May447/DSH-starter/releases/latest) 下载对应产物（当前版本 **v0.1.0**，文件名里的 `0.1.0` 会随版本变）：
+去 [Releases](https://github.com/May447/dsh-Workspace-Launcher/releases/latest) 下载对应产物（当前版本 **v0.1.0**，文件名里的 `0.1.0` 会随版本变）：
 
 | 产物 | 适合 |
 | --- | --- |
