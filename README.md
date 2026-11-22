@@ -15,11 +15,8 @@ DSH-starter 是一层**前端门面 + 进程管理**，不是另一个 agent 运
 
 ---
 
-## 状态
 
-v0.1 可用。已落地：Electron + React + electron-vite 工程、IPC 契约、设置持久化、`dsh` 子进程管理（含就绪行解析）、HoYoPlay 式外壳、xterm 启动日志、三平台打包。剩余：界面 i18n、首启引导、签名。
-
-## 安装（不想编译）
+## 安装
 
 去 [Releases](../../releases) 下载对应产物：
 
@@ -27,15 +24,13 @@ v0.1 可用。已落地：Electron + React + electron-vite 工程、IPC 契约�
 | --- | --- |
 | `DSH-starter-Setup-x.y.z.exe` | 常规安装：可选安装路径，建桌面 / 开始菜单快捷方式 |
 | `DSH-starter-x.y.z-portable.exe` | 单文件便携版，免安装，放 U 盘也能跑 |
-| `.dmg` / `.AppImage` | macOS / Linux |
 
 前提：本机有可用的 `dsh`（PATH 上，或在设置里填绝对路径）。**启动器自己不带 dsh。**
 
 ## 环境要求
 
-- Node.js ≥ 22（开发用 24 验证过）
+- Node.js ≥ 22
 - pnpm ≥ 10
-- 本机有一个可用的 `dsh`（PATH 上有，或在设置里填绝对路径）
 
 ## 快速开始
 
@@ -54,8 +49,6 @@ pnpm dev
 | 平台 | 位置 |
 | --- | --- |
 | Windows | `%APPDATA%\DSH-starter\settings.json` |
-| macOS | `~/Library/Application Support/DSH-starter/settings.json` |
-| Linux | `~/.config/DSH-starter/settings.json` |
 
 关键字段：
 
@@ -147,7 +140,7 @@ pnpm run dist     # 当前平台的安装包（Windows 走 NSIS）
 ### 当前能力（v0.1）
 
 - **全屏壁纸外壳**：内置 6 套渐变，可换本地图片（文件框或直接拖进窗口），暗度 / 模糊拖动实时生效；右上角原生窗口按钮底色透明，不留黑块
-- **镜像布局（米哈游启动器式）**：工具在左上（品牌名 + 更多 + 设置），唯一的动作在右下（一个大按钮：启动 / 取消 / 停止），中间只放作品名
+- **镜像布局**：工具在左上（品牌名 + 更多 + 设置），唯一的动作在右下（一个大按钮：启动 / 取消 / 停止），中间只放作品名
 - **Web GUI 全在「更多」里**：就绪状态、掩码地址、打开 Web GUI、复制地址、启动日志；一级页面不再有重复按钮
 - **空态会教**：没有工作区时给一行三步流程 + 「选择目录」
 - 后台隐藏跑 `dsh` 子进程（无控制台窗口）；就绪后**只在系统浏览器打开**
