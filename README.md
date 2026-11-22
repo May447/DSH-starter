@@ -1,8 +1,12 @@
-# dsh-Workspace-Launcher
+# DSH-starter
 
 > DeepSeek Harness（`dsh`）的现代启动器 —— 游戏启动器式入口：挑工作区、看启动日志、按一下就开跑。
 
 [English](README.en.md) · **简体中文**
+
+[![Release](https://img.shields.io/github/v/release/May447/DSH-starter?label=release)](https://github.com/May447/DSH-starter/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/May447/DSH-starter/total)](https://github.com/May447/DSH-starter/releases)
+[![License](https://img.shields.io/github/license/May447/DSH-starter)](LICENSE)
 
 DSH-starter 是一层**前端门面 + 进程管理**，不是另一个 agent 运行时。它负责：
 
@@ -15,23 +19,50 @@ DSH-starter 是一层**前端门面 + 进程管理**，不是另一个 agent 运
 
 ---
 
+## 截图
 
-## 安装
+主界面 —— 全屏壁纸，工具在左上，唯一的动作在右下：
 
-去 [Releases](../../releases) 下载对应产物：
+<img src="docs/screenshots/main.png" width="680" alt="主界面" />
+
+设置面板 —— 壁纸与配色（内置 6 套渐变 + 8 套四色主题，也可自己拖图、自己调色）：
+
+<img src="docs/screenshots/settings-theme.png" width="680" alt="设置：背景与配色" />
+
+设置面板 —— 窗口比例与界面文案（16:9 / 16:10 / 21:9 / 2:1，品牌名、大标题都能改）：
+
+<img src="docs/screenshots/settings-window.png" width="680" alt="设置：窗口与文案" />
+
+---
+
+## 状态
+
+v0.1 可用。已落地：Electron + React + electron-vite 工程、IPC 契约、设置持久化、`dsh` 子进程管理（含就绪行解析）、HoYoPlay 式外壳、xterm 启动日志、三平台打包。剩余：界面 i18n、首启引导、签名。
+
+## 安装（不想编译）
+
+去 [Releases](https://github.com/May447/DSH-starter/releases/latest) 下载对应产物（当前版本 **v0.1.0**，文件名里的 `0.1.0` 会随版本变）：
 
 | 产物 | 适合 |
 | --- | --- |
-| `DSH-starter-Setup-x.y.z.exe` | 常规安装：可选安装路径，建桌面 / 开始菜单快捷方式 |
-| `DSH-starter-x.y.z-portable.exe` | 单文件便携版，免安装，放 U 盘也能跑 |
+| `DSH-starter-Setup-0.1.0.exe` | 常规安装：可选安装路径，建桌面 / 开始菜单快捷方式 |
+| `DSH-starter-0.1.0-portable.exe` | 单文件便携版，免安装，放 U 盘也能跑 |
+| `.dmg` / `.AppImage` | macOS / Linux |
 
 前提：本机有可用的 `dsh`（PATH 上，或在设置里填绝对路径）。**启动器自己不带 dsh。**
 
 ## 环境要求
 
-- Node.js ≥ 22
+- Node.js ≥ 22（开发用 24 验证过）
 - pnpm ≥ 10
+- 本机有一个可用的 `dsh`（PATH 上有，或在设置里填绝对路径）
 
+## 快速开始
+
+```bash
+pnpm install
+pnpm dev
+```
 
 默认配置：`dshCommand=dsh`、`profile=web`、`port=0`（让系统挑空闲端口）、`openOnReady=external`。
 第一次启动如果找不到 `dsh`，在设置里填绝对路径（Windows 上可以是 `dsh.cmd`）。
@@ -43,6 +74,8 @@ DSH-starter 是一层**前端门面 + 进程管理**，不是另一个 agent 运
 | 平台 | 位置 |
 | --- | --- |
 | Windows | `%APPDATA%\DSH-starter\settings.json` |
+| macOS | `~/Library/Application Support/DSH-starter/settings.json` |
+| Linux | `~/.config/DSH-starter/settings.json` |
 
 关键字段：
 
@@ -130,19 +163,39 @@ pnpm run dist     # 当前平台的安装包（Windows 走 NSIS）
 
 > 当前 release **未做代码签名**，Windows SmartScreen / macOS Gatekeeper 可能提示未知发布者。下载后建议先比对 release 附带的 `sha256sums.txt` 再运行。
 
+体积参考（Windows x64，Electron 45）：解包目录约 **310 MB**（其中 `DSH-starter.exe` 就是 Chromium 主体），安装包压缩后约 **110 MB**。这是 Electron 的固有成本，介意体积就该换 Tauri/纯浏览器方案。
+
+> 环境提示：`electron-builder` 内部会再跑一次 `pnpm install`，pnpm 会校验 store 一致性。如果报 `ERR_PNPM_UNEXPECTED_STORE` 或 `ABORTED_REMOVE_MODULES_DIR`，用 `pnpm install --store-dir <同一个 store>` 对齐，或直接 `node node_modules/electron-builder/cli.js --dir` 绕过 pnpm 包装。
+
+## 路线图
+
+- [x] M0 工程骨架 + IPC 契约
+- [x] M1 启动器主界面 + 启动日志终端（xterm.js）
+- [x] M2 真实启动 `dsh web` → 识别就绪 → 接管 Web GUI
+- [x] M3 就绪后的可交互终端（复用 DSH Web GUI 右侧栏终端，不自建 pty）
+- [x] M4 打包分发（electron-builder：Windows / macOS / Linux）
+- [ ] M5 界面文案 i18n
+- [ ] 首启引导
 
 ### 当前能力（v0.1）
 
 - **全屏壁纸外壳**：内置 6 套渐变，可换本地图片（文件框或直接拖进窗口），暗度 / 模糊拖动实时生效；右上角原生窗口按钮底色透明，不留黑块
-- **镜像布局**：工具在左上（品牌名 + 更多 + 设置），唯一的动作在右下（一个大按钮：启动 / 取消 / 停止），中间只放作品名
+- **镜像布局（米哈游启动器式）**：工具在左上（品牌名 + 更多 + 设置），唯一的动作在右下（一个大按钮：启动 / 取消 / 停止），中间只放作品名
 - **Web GUI 全在「更多」里**：就绪状态、掩码地址、打开 Web GUI、复制地址、启动日志；一级页面不再有重复按钮
 - **空态会教**：没有工作区时给一行三步流程 + 「选择目录」
-- 后台隐藏跑 `dsh` 子进程（无控制台窗口）；就绪后**只在系统浏览器打开**
+- 后台隐藏跑 `dsh` 子进程（无控制台窗口）；就绪后**只在系统浏览器打开**（内嵌窗口已移除）
 - 四色主题（背景/卡片/主色/强调）：8 套 ColorHunt 风预设 + 自定义，**只作用于启动按钮和设置面板**；文字、边框、内凹输入面全部由四色推导，浅色主题也保证对比度
 - **高自定义**：窗口比例（16:9 / 16:10 / 21:9 / 2:1）与宽度占比可调、改完立即生效；大标题、品牌名、标题上方小字、就绪后那句、是否显示路径都能改（设置 → 文案，大标题留空则用工作区名），工作区可原地重命名；设置面板（内联浮卡）另有背景 / 配色 / 就绪方式 / 字号 / 高级（命令、模式、端口、参数、环境变量）
 - 可交互终端复用 DSH Web GUI 右侧栏；electron-builder 打包（NSIS/dmg/AppImage，ASCII 路径构建）
 
 已知未做：界面文案 i18n（目前只有中文）；首启引导；打包未签名。
+
+## 安全
+
+- **它会按你的配置执行命令**——这是功能，也意味着被篡改的 `settings.json` 等于任意命令执行。完整威胁模型见 [SECURITY.md](SECURITY.md)。
+- 不联网、无遥测、无更新检查；Web GUI 的 `?token=…` 始终掩码显示，复制走系统剪贴板，交给浏览器时只放行 `http:`/`https:`。
+- 渲染进程 `contextIsolation` + `sandbox` + CSP；新窗口一律 deny、禁止页面导航与 webview、权限请求默认全拒。
+- 漏洞请走私密披露（仓库 **Security → Advisories**），不要先开公开 issue。
 
 ## 参与贡献
 

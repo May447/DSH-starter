@@ -19,6 +19,22 @@ Chat, sessions, approvals and plugins all come from DSH itself — this project 
 
 ---
 
+## Screenshots
+
+Main window — a full-bleed wallpaper, tools top-left, one action bottom-right:
+
+<img src="docs/screenshots/main.png" width="680" alt="Main window" />
+
+Settings — wallpaper and theme (6 built-in gradients + 8 four-colour themes, or drop in your own art):
+
+<img src="docs/screenshots/settings-theme.png" width="680" alt="Settings: background and theme" />
+
+Settings — window ratio and copy (16:9 / 16:10 / 21:9 / 2:1; brand name, headline are all editable):
+
+<img src="docs/screenshots/settings-window.png" width="680" alt="Settings: window and copy" />
+
+---
+
 ## Status
 
 v0.1. Working: Electron + React + electron-vite project, IPC contract, settings persistence, `dsh` child-process lifecycle (including ready-line parsing), the HoYoPlay-style shell, the xterm boot log, and packaging for Windows / macOS / Linux.
